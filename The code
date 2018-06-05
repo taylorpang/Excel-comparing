@@ -1,0 +1,150 @@
+    import openpyxl as op
+    #from openpyxl import Workbook
+    #from openpyxl import load_workbook
+    import tkinter as tk
+    from tkinter import *
+    from tkinter import filedialog
+    from openpyxl.styles import Font
+    from openpyxl.styles import PatternFill
+    from openpyxl.styles.colors import RED
+
+
+    def openfiles1():
+        global s2fname1
+        s2fname1 = filedialog.askopenfilename(title='待转化的文件', filetypes=[('bom', '*.xls'), ('bom', '*.xlsx'),('All Files', '*')])
+        #print(s2fname)
+        t.insert (1.0,'BOM1:',2.0, s2fname1,3.0,'\n')
+        
+        return s2fname1
+
+
+    def openfiles2():
+        global s2fname2
+        s2fname2 = filedialog.askopenfilename(title='待转化的文件', filetypes=[('bom', '*.xls'), ('bom', '*.xlsx'),('All Files', '*')])
+        #print(s2fname)
+        t.insert (1.0,'BOM2:',2.0, s2fname2,3.0,'\n')
+        return s2fname2
+
+
+    def button3():
+
+             
+
+        l_p=[]#定义两个全局list，分别存储原始和目的需要对比的数据
+        l_t=[]
+
+        #新建excel
+        wb2=op.Workbook()
+        wb2.save(s2fname1+'-NEW.XLSX')
+        wb4=op.Workbook()
+        wb4.save(s2fname2+'-NEW.XLSX')
+
+        print('新建成功')
+        #读取数据
+
+        wb1=op.load_workbook(s2fname1)
+        wb2=op.load_workbook(s2fname1+'-NEW.XLSX')
+
+        wb3=op.load_workbook(s2fname2)
+        wb4=op.load_workbook(s2fname2+'-NEW.XLSX')
+
+        sheets1=wb1.get_sheet_names() #获取sheet页
+        sheets2=wb2.get_sheet_names()
+        sheets3=wb3.get_sheet_names() #获取sheet页
+        sheets4=wb4.get_sheet_names()
+
+
+        sheet1=wb1.get_sheet_by_name(sheets1[1])
+        sheet2=wb2.get_sheet_by_name(sheets2[0])
+        sheet3=wb3.get_sheet_by_name(sheets3[1])
+        sheet4=wb4.get_sheet_by_name(sheets4[0])
+
+
+
+        max_row=sheet1.max_row #最大行数
+        max_column=sheet1.max_column #最大列数
+
+        max_row1=sheet3.max_row #最大行数
+        max_column1=sheet3.max_column #最大列数
+
+        for m in range(1,max_row+1):
+            for n in range(97,97+max_column): #chr(97)='a'
+                n=chr(n) #ASCII字符
+
+                i='%s%d'%(n,m)  #单元格编号
+                cell1=sheet1[i].value #获取data单元格数据
+                sheet2[i].value=cell1 #赋值到test单元格
+                l_p.append(sheet2[i].value)
+
+
+        for p in range(1,max_row+1):
+            for q in range(97,97+max_column): #chr(97)='a'
+
+
+                q=chr(q) #ASCII字符
+                w='%s%d'%(q,p)  #单元格编号
+                cell2=sheet3[w].value #获取data单元格数据
+                sheet4[w].value=cell2 #赋值到test单元格
+                l_t.append(sheet4[w].value)
+
+
+             
+        tmp_pd = list(set(l_p).difference(set(l_t)))
+
+        #求参数在tar中存在，而在pri中不存在的
+
+        tmp_td = list(set(l_t).difference(set(l_p)))
+
+        for m in range(1,max_row+1):
+            for n in range(97,97+max_column): #chr(97)='a'
+                n=chr(n) #ASCII字符
+
+                i='%s%d'%(n,m)  #单元格编号
+                
+                if sheet2[i].value in tmp_pd:
+             
+                    sheet2[i].font = Font(color=RED)
+                    sheet2[i].fill= PatternFill(fill_type='solid',fgColor="00FFFF")
+
+        for p in range(1,max_row+1):
+            for q in range(97,97+max_column): #chr(97)='a'
+
+
+                q=chr(q) #ASCII字符
+                w='%s%d'%(q,p)  #单元格编号
+                if sheet4[w].value in tmp_td:
+             
+                    sheet4[w].font = Font(color=RED)
+                    sheet4[w].fill= PatternFill(fill_type='solid',fgColor="00FFFF")
+                
+        wb2.save(s2fname1+'-NEW.XLSX')#保存数据
+        wb1.close()#关闭excel
+        wb2.close()
+
+        wb4.save(s2fname2+'-NEW.XLSX')#保存数据
+        wb3.close()#关闭excel
+        wb4.close()
+
+
+        t.insert (1.0,'ok',2.0,'\n')
+        
+
+    root = tk.Tk()
+    root.title("BOMVS1.1 by 庞霄")
+    root.geometry('500x300+500+200')
+
+    btn1 = tk.Button(root, text='BOM1',bg="blue",font =("宋体",15,'bold'),width=10,height=1, command=openfiles1)
+
+    btn2 = tk.Button(root, text='BOM2',bg="pink",font =("宋体",15,'bold'),width=10,height=1, command=openfiles2)
+
+    btn3 = tk.Button(root, text='GO!',bg="red",font =("宋体",15,'bold'),width=10,height=1, command=button3)
+
+    btn1.pack(side=tk.LEFT)
+    btn2.pack(side=tk.LEFT)
+    btn3.pack(side=tk.BOTTOM)
+
+    t =Text()
+    t.pack(side=tk.RIGHT)
+    #t.insert(1.0,'1. 删除Micron BOM的第一页，保存并关闭\n',2.0,'2. 点击“搞起”按钮，选择需要转化的Micron BOM\n',3.0,'3. 在对话框中填写位置所在的列,A列填0，G列填6\n',4.0,'4. 生成的newbom为转化后的\n')
+
+    root.mainloop()
